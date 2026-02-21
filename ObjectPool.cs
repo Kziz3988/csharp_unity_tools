@@ -1,11 +1,11 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
 public class ObjectPool : MonoBehaviour{
 	public GameObject prefab;
 	public int size;
-	private Queue<GameObject> pool;
+	Queue<GameObject> pool;
 
 	void Awake() {
 		Init();
@@ -35,55 +35,54 @@ public class ObjectPool : MonoBehaviour{
 	public GameObject Get(Transform parent) {
 		if(pool.Count == 0) ExpandPool();
 		GameObject obj = pool.Dequeue();
-		obj.SetActive(true);
 		obj.transform.SetParent(parent);
+		obj.SetActive(true);
 		return obj;
 	}
 
 	public GameObject Get(Vector3 position, Quaternion rotation) {
 		if(pool.Count == 0) ExpandPool();
 		GameObject obj = pool.Dequeue();
-		obj.SetActive(true);
 		obj.transform.position = position;
 		obj.transform.rotation = rotation;
+		obj.SetActive(true);
 		return obj;
 	}
 
 	public GameObject Get(Vector3 position, Quaternion rotation, Transform parent) {
 		if(pool.Count == 0) ExpandPool();
 		GameObject obj = pool.Dequeue();
-		obj.SetActive(true);
 		obj.transform.position = position;
 		obj.transform.rotation = rotation;
 		obj.transform.SetParent(parent);
+		obj.SetActive(true);
 		return obj;
 	}
 
 	public GameObject Get(TransformData data) {
 		if(pool.Count == 0) ExpandPool();
 		GameObject obj = pool.Dequeue();
-		obj.SetActive(true);
 		obj.transform.position = data.position;
 		obj.transform.rotation = data.rotation;
 		obj.transform.SetParent(data.parent);
+		obj.SetActive(true);
 		return obj;
 	}
 
 	//Ensure the GameObject belongs to this pool before calling it!!!
 	public void Release(GameObject obj) {
-		if(obj == null) return;
+		if(obj == null || !obj.activeInHierarchy) return;
+		obj.SetActive(false);
 		SpriteRenderer sp = obj.GetComponent<SpriteRenderer>();
 		if(sp != null) sp.sprite = null;
 		obj.transform.SetParent(transform);
 		obj.transform.position = Vector3.zero;
 		obj.transform.rotation = Quaternion.identity;
-		obj.SetActive(false);
 		pool.Enqueue(obj);
 	}
 
 	void ExpandPool() {
 		GameObject obj = Instantiate(prefab, transform);
-		obj.SetActive(false);
-		pool.Enqueue(obj);
+		Release(obj);
 	}
 }
